@@ -36,6 +36,9 @@
         <header-file src="src/ios/SOSPicker.h" />
         <source-file src="src/ios/SOSPicker.m" />
 
+        <header-file src="src/ios/GMImagePicker/FeHourGlass.h" />
+        <source-file src="src/ios/GMImagePicker/FeHourGlass.m" />
+      
         <header-file src="src/ios/GMImagePicker/UIImage+fixOrientation.h" />
         <source-file src="src/ios/GMImagePicker/UIImage+fixOrientation.m" />
 
@@ -97,9 +100,7 @@
                 <param name="android-package" value="com.synconset.ImagePicker"/>
             </feature>
         </config-file>
-        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
-            <application android:requestLegacyExternalStorage="true" />
-        </edit-config>
+
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <activity android:label="@string/multi_app_name" android:name="com.synconset.MultiImageChooserActivity" android:theme="@style/Theme.AppCompat.Light">
             </activity>
