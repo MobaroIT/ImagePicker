@@ -31,6 +31,7 @@ public class ImagePicker extends CordovaPlugin {
 
     private static final int PERMISSION_REQUEST_CODE = 100;
 
+	protected JSONArray args;
     private CallbackContext callbackContext;
 
     public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -45,61 +46,48 @@ public class ImagePicker extends CordovaPlugin {
             return true;
 
         } else if (ACTION_GET_PICTURES.equals(action)) {
-            final JSONObject params = args.getJSONObject(0);
-            final Intent imagePickerIntent = new Intent(cordova.getActivity(), MultiImageChooserActivity.class);
-            int max = 20;
-            int desiredWidth = 0;
-            int desiredHeight = 0;
-            int quality = 100;
-            int outputType = 0;
-            if (params.has("maximumImagesCount")) {
-                max = params.getInt("maximumImagesCount");
-            }
-            if (params.has("width")) {
-                desiredWidth = params.getInt("width");
-            }
-            if (params.has("height")) {
-                desiredHeight = params.getInt("height");
-            }
-            if (params.has("quality")) {
-                quality = params.getInt("quality");
-            }
-            if (params.has("outputType")) {
-                outputType = params.getInt("outputType");
-            }
-
-            imagePickerIntent.putExtra("MAX_IMAGES", max);
-            imagePickerIntent.putExtra("WIDTH", desiredWidth);
-            imagePickerIntent.putExtra("HEIGHT", desiredHeight);
-            imagePickerIntent.putExtra("QUALITY", quality);
-            imagePickerIntent.putExtra("OUTPUT_TYPE", outputType);
-
-            // some day, when everybody uses a cordova version supporting 'hasPermission', enable this:
-            /*
-            if (cordova != null) {
-                 if (cordova.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    cordova.startActivityForResult(this, imagePickerIntent, 0);
-                 } else {
-                     cordova.requestPermission(
-                             this,
-                             PERMISSION_REQUEST_CODE,
-                             Manifest.permission.READ_EXTERNAL_STORAGE
-                     );
-                 }
-             }
-             */
-            // .. until then use:
+			this.args = args;
             if (hasReadPermission()) {
-                cordova.startActivityForResult(this, imagePickerIntent, 0);
+                this.launchActivity();
             } else {
                 requestReadPermission();
-                // The downside is the user needs to re-invoke this picker method.
-                // The best thing to do for the dev is check 'hasReadPermission' manually and
-                // run 'requestReadPermission' or 'getPictures' based on the outcome.
             }
             return true;
         }
         return false;
+    }
+
+	protected void launchActivity() throws  JSONException {
+        final JSONObject params = this.args.getJSONObject(0);
+        final Intent imagePickerIntent = new Intent(cordova.getActivity(), MultiImageChooserActivity.class);
+        int max = 20;
+        int desiredWidth = 0;
+        int desiredHeight = 0;
+        int quality = 100;
+        int outputType = 0;
+        if (params.has("maximumImagesCount")) {
+            max = params.getInt("maximumImagesCount");
+        }
+        if (params.has("width")) {
+            desiredWidth = params.getInt("width");
+        }
+        if (params.has("height")) {
+            desiredHeight = params.getInt("height");
+        }
+        if (params.has("quality")) {
+            quality = params.getInt("quality");
+        }
+        if (params.has("outputType")) {
+            outputType = params.getInt("outputType");
+        }
+
+        imagePickerIntent.putExtra("MAX_IMAGES", max);
+        imagePickerIntent.putExtra("WIDTH", desiredWidth);
+        imagePickerIntent.putExtra("HEIGHT", desiredHeight);
+        imagePickerIntent.putExtra("QUALITY", quality);
+        imagePickerIntent.putExtra("OUTPUT_TYPE", outputType);
+
+        cordova.startActivityForResult(this, imagePickerIntent, 0);
     }
 
     @SuppressLint("InlinedApi")
@@ -156,7 +144,7 @@ public class ImagePicker extends CordovaPlugin {
         this.callbackContext = callbackContext;
     }
 
-/*
+
     @Override
     public void onRequestPermissionResult(int requestCode,
                                           String[] permissions,
@@ -164,11 +152,11 @@ public class ImagePicker extends CordovaPlugin {
 
         // For now we just have one permission, so things can be kept simple...
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            cordova.startActivityForResult(this, imagePickerIntent, 0);
+            this.launchActivity();
         } else {
             // Tell the JS layer that something went wrong...
             callbackContext.error("Permission denied");
         }
     }
-*/
+
 }
