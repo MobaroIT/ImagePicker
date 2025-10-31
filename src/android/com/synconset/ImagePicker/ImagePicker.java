@@ -233,4 +233,49 @@ public class ImagePicker extends CordovaPlugin {
      */
     private String copyUriToCache(Uri uri) throws IOException {
         Activity activity = cordova.getActivity();
-        InputStream in = activity.getContentResol
+        InputStream in = activity.getContentResolver().openInputStream(uri);
+
+        File outDir = activity.getCacheDir();
+        String fileName = "picked_" + System.currentTimeMillis() + ".jpg";
+        File outFile = new File(outDir, fileName);
+
+        OutputStream out = new FileOutputStream(outFile);
+        byte[] buf = new byte[8192];
+        int len;
+        while ((len = in.read(buf)) != -1) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.flush();
+        out.close();
+
+        return outFile.getAbsolutePath();
+    }
+
+    /**
+     * Choosing a picture launches another Activity, so we need to implement the
+     * save/restore APIs to handle the case where the CordovaActivity is killed by the OS
+     * before we get the launched Activity's result.
+     *
+     * @see http://cordova.apache.org/docs/en/dev/guide/platforms/android/plugin.html#launching-other-activities
+     */
+    @Override
+    public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
+        this.callbackContext = callbackContext;
+    }
+
+    @Override
+    public void onRequestPermissionResult(int requestCode,
+                                          String[] permissions,
+                                          int[] grantResults) throws JSONException {
+
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                this.launchLegacyActivity();
+            } else {
+                callbackContext.error("Permission denied");
+            }
+        }
+    }
+
+}
